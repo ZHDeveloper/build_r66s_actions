@@ -25,21 +25,6 @@ sed -i "/system.@system\[0\].timezone/d" package/base-files/files/bin/config_gen
 echo "        set system.@system[0].timezone='CST-8'" >> package/base-files/files/bin/config_generate
 echo "        set system.@system[0].zonename='Asia/Shanghai'" >> package/base-files/files/bin/config_generate
 
-# 执行预设脚本
-SCRIPT_DIR="$(dirname "$0")"
-
-# 执行 AdGuard Home 预设
-if [ -f "$SCRIPT_DIR/preset-adguard-core.sh" ]; then
-    chmod +x "$SCRIPT_DIR/preset-adguard-core.sh"
-    bash "$SCRIPT_DIR/preset-adguard-core.sh"
-fi
-
-# 执行 OpenClash 预设
-if [ -f "$SCRIPT_DIR/preset-clash-core.sh" ]; then
-    chmod +x "$SCRIPT_DIR/preset-clash-core.sh"
-    bash "$SCRIPT_DIR/preset-clash-core.sh"
-fi
-
 # 添加自定义文件
 if [ -d "files" ]; then
     cp -r files/* package/base-files/files/
