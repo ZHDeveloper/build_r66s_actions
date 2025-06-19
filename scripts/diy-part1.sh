@@ -10,10 +10,6 @@
 # Description: OpenWrt DIY script part 1 (Before Update feeds)
 # =================================================================
 
-# Use custom feeds from project root
-echo "Copying custom feeds from $GITHUB_WORKSPACE/feeds.conf.default to $GITHUB_WORKSPACE/openwrt/feeds.conf.default"
-cp $GITHUB_WORKSPACE/feeds.conf.default $GITHUB_WORKSPACE/openwrt/feeds.conf.default
-
 # 执行预设脚本
 SCRIPT_DIR="$(dirname "$0")"
 
