@@ -1,0 +1,21 @@
+#!/bin/sh
+
+# 自定义设置脚本
+# 此脚本在首次启动时执行，用于初始化系统设置
+
+
+
+# 设置默认主题
+uci set luci.main.mediaurlbase='/luci-static/argon'
+
+# 设置无线国家代码
+uci set wireless.radio0.country='CN'
+uci set wireless.radio1.country='CN'
+
+# 提交配置
+uci commit
+
+# 删除此脚本（只执行一次）
+rm -f /etc/uci-defaults/99-custom-settings
+
+exit 0
