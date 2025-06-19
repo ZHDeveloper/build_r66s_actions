@@ -14,4 +14,4 @@ if [ -z "$AGH_CORE" ]; then
 fi
 
 # 下载并解压 AdGuard Home
-wget -qO- $AGH_CORE | tar xOvz > files/usr/bin/AdGuardHome/AdGuardHome && chmod +x files/usr/bin/AdGuardHome/AdGuardHome
+wget -qO- $AGH_CORE | tar xz -C files/usr/bin/AdGuardHome/ && chmod +x files/usr/bin/AdGuardHome/AdGuardHome
