@@ -1,4 +1,4 @@
-name: R66S OpenWrt Build
+name: R66S ImmortalWrt Build
 
 on:
   workflow_dispatch:
@@ -13,14 +13,14 @@ on:
     branches:
       - main
     paths:
-      - 'configs/r66s.config'
+      - 'configs/immortalwrt-r66s.config'
       - 'scripts/**'
-      - '.github/workflows/R66S-OpenWrt.yml'
+      - '.github/workflows/ImmortalWrt-R66S.yml'
 
 env:
-  REPO_URL: https://github.com/coolsnowwolf/lede
-  REPO_BRANCH: master
-  CONFIG_FILE: configs/r66s.config
+  REPO_URL: https://github.com/immortalwrt/immortalwrt
+  REPO_BRANCH: openwrt-24.10
+  CONFIG_FILE: configs/immortalwrt-r66s.config
   DIY_P1_SH: scripts/diy-part1.sh
   DIY_P2_SH: scripts/diy-part2.sh
   UPLOAD_BIN_DIR: false
@@ -124,7 +124,7 @@ jobs:
       uses: actions/upload-artifact@main
       if: steps.compile.outputs.status == 'success' && env.UPLOAD_BIN_DIR == 'true'
       with:
-        name: OpenWrt_bin${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
+        name: ImmortalWrt_bin${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
         path: openwrt/bin
 
     - name: Organize files
@@ -140,7 +140,7 @@ jobs:
       uses: actions/upload-artifact@main
       if: steps.organize.outputs.status == 'success' && !cancelled()
       with:
-        name: OpenWrt_firmware${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
+        name: ImmortalWrt_firmware${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
         path: ${{ env.FIRMWARE }}
 
     - name: Generate release tag
