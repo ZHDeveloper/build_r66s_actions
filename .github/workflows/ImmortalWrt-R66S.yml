@@ -51,28 +51,107 @@ jobs:
         echo "--------------------------硬盘信息--------------------------"
         echo "硬盘数量: $(ls /dev/sd* | grep -v [1-9] | wc -l)" && df -hT
 
+    - name: Combine Disks
+      run: |
+        echo "合并磁盘空间以获得更大的可用空间"
+        sudo swapoff -a
+        sudo rm -f /swapfile /mnt/swapfile
+        export ROOT_FREE_KB=$(df --block-size=1024 --output=avail / | tail -1)
+        export ROOT_LOOP_KB=$(expr $ROOT_FREE_KB - 1048576)
+        export ROOT_LOOP_BYTES=$(expr $ROOT_LOOP_KB \* 1024)
+        sudo fallocate -l $ROOT_LOOP_BYTES /tmp/root.img || sudo dd if=/dev/zero of=/tmp/root.img bs=1024 count=$ROOT_LOOP_KB
+        export ROOT_LOOP_DEVNAME=$(sudo losetup -Pf --show /tmp/root.img)
+        sudo pvcreate -f $ROOT_LOOP_DEVNAME
+        export MNT_FREE_KB=$(df --block-size=1024 --output=avail /mnt | tail -1)
+        export MNT_LOOP_KB=$(expr $MNT_FREE_KB - 102400)
+        export MNT_LOOP_BYTES=$(expr $MNT_LOOP_KB \* 1024)
+        sudo fallocate -l $MNT_LOOP_BYTES /mnt/mnt.img || sudo dd if=/dev/zero of=/mnt/mnt.img bs=1024 count=$MNT_LOOP_KB
+        export MNT_LOOP_DEVNAME=$(sudo losetup -Pf --show /mnt/mnt.img)
+        sudo pvcreate -f $MNT_LOOP_DEVNAME
+        sudo vgcreate vgstorage $ROOT_LOOP_DEVNAME $MNT_LOOP_DEVNAME
+        sudo lvcreate -n lvstorage -l +100%FREE vgstorage
+        export LV_DEVNAME=$(sudo lvdisplay | awk '/LV Path/{print $3}')
+        sudo mkfs.ext4 -L combinedisk $LV_DEVNAME
+        sudo mount $LV_DEVNAME /tmp/combined
+        sudo chown runner:runner /tmp/combined
+        sudo chmod 755 /tmp/combined
+        echo "/tmp/combined 磁盘合并完成"
+        df -hT
+
     - name: Initialization environment
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
-        # 清理 Docker 镜像
-        docker rmi $(docker images -q)
-        # 删除不需要的软件和目录
-        sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d /usr/local/lib/android $AGENT_TOOLSDIRECTORY
-        # 关闭并删除交换文件
-        sudo swapoff -a && sudo rm -f /swapfile /mnt/swapfile
+        echo "开始初始化编译环境"
+        # 显示系统信息
+        echo "当前磁盘使用情况:"
+        df -hT
+        echo "当前内存使用情况:"
+        free -h
+        
+        # 清理 Docker 相关
+        echo "清理 Docker 镜像和容器..."
+        docker system prune -a -f || true
+        docker rmi $(docker images -q) 2>/dev/null || true
+        
+        # 清理系统缓存和临时文件
+        echo "清理系统缓存..."
+        sudo apt-get clean
+        sudo rm -rf /var/lib/apt/lists/*
+        sudo rm -rf /tmp/* /var/tmp/* || true
+        
+        # 删除不需要的大型软件包和目录
+        echo "删除不需要的软件包..."
+        sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache
+        sudo rm -rf /usr/local/share/boost /usr/local/graalvm /usr/local/share/chromium
+        sudo rm -rf /usr/local/share/powershell /usr/local/share/vcpkg /usr/local/lib/node_modules
+        sudo rm -rf /usr/share/swift /usr/local/.ghcup /home/linuxbrew
+        sudo rm -rf /etc/apt/sources.list.d/* $AGENT_TOOLSDIRECTORY || true
+        
         # 卸载不需要的软件包
-        sudo -E apt-get -y purge azure-cli ghc* zulu* llvm* firefox google* dotnet* powershell openjdk* mongodb* moby* || true
-        # 更新系统并安装必要的软件包
-        sudo -E apt-get -y update
-        sudo -E apt-get -y install clang rename $(curl -fsSL is.gd/depends_ubuntu_2204)
+        echo "卸载不需要的软件包..."
+        sudo -E apt-get -y purge azure-cli* ghc* zulu* llvm* firefox google* dotnet* powershell* \
+          openjdk* mongodb* moby* snapd* php* mysql* postgresql* apache2* nginx* || true
+        
+        # 更新软件包列表
+        echo "更新软件包列表..."
+        sudo -E apt-get -qq update
+        
+        # 安装编译依赖
+        echo "安装编译依赖..."
+        sudo -E apt-get -y install ack antlr3 asciidoc autoconf automake autopoint binutils \
+          bison build-essential bzip2 ccache cmake cpio curl device-tree-compiler fastjar \
+          flex gawk gettext gcc-multilib g++-multilib git gperf haveged help2man intltool \
+          libc6-dev-i386 libelf-dev libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev \
+          libmpfr-dev libncurses5-dev libncursesw5-dev libreadline-dev libssl-dev libtool \
+          lrzsz mkisofs msmtp nano ninja-build p7zip p7zip-full patch pkgconf python2.7 \
+          python3 python3-pip libpython3-dev qemu-utils rsync scons squashfs-tools subversion \
+          swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev clang rename
+        
+        # 系统清理和优化
+        echo "系统清理和优化..."
         sudo -E systemctl daemon-reload
         sudo -E apt-get -y autoremove --purge
         sudo -E apt-get -y clean
+        sudo -E apt-get -y autoclean
+        
         # 设置时区
         sudo timedatectl set-timezone "$TZ"
-        sudo mkdir -p /workdir
-        sudo chown $USER:$GROUPS /workdir
+        
+        # 创建工作目录
+        echo "创建工作目录..."
+        if [ -d "/tmp/combined" ]; then
+          sudo mkdir -p /tmp/combined/workdir
+          sudo chown -R $USER:$GROUPS /tmp/combined/workdir
+          ln -sf /tmp/combined/workdir /workdir
+        else
+          sudo mkdir -p /workdir
+          sudo chown $USER:$GROUPS /workdir
+        fi
+        
+        echo "环境初始化完成"
+        echo "最终磁盘使用情况:"
+        df -hT
 
     - name: Clone source code
       working-directory: /workdir
