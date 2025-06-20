@@ -185,15 +185,6 @@ jobs:
         echo "DEFAULT_IP=$DEFAULT_IP" >> $GITHUB_ENV
         echo "DATE=$(date +"%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
 
-    - name: Clean up build directories
-      if: (!cancelled())
-      run: |
-        cd openwrt
-        rm -rf build_dir tmp
-        sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
-        sudo apt-get clean
-        df -hT
-
     - name: Check space usage
       if: (!cancelled())
       run: df -hT
