@@ -37,7 +37,7 @@ jobs:
         source: [lede, immortalwrt]
 
     env:
-      RELEASE_TAG: armv8-${{ matrix.openwrt }}
+      RELEASE_TAG: Flippy-${{ matrix.source }}
 
     steps:
     - name: Checkout
@@ -180,7 +180,15 @@ jobs:
         # 使用更保守的并行编译策略
         THREAD_COUNT=$(($(nproc) > 4 ? $(nproc) - 2 : $(nproc)))
         echo "Using $THREAD_COUNT threads for compilation"
-        make -j$THREAD_COUNT || make -j1 || make -j1 V=s
+        # 添加更详细的错误处理
+        make -j$THREAD_COUNT V=s || {
+          echo "First compilation failed, trying single thread with verbose output"
+          make -j1 V=s || {
+            echo "Single thread compilation also failed, checking for specific errors"
+            make package/ppp/compile V=s || true
+            make -j1 V=s
+          }
+        }
         echo "status=success" >> $GITHUB_OUTPUT
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
