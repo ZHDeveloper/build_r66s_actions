@@ -21,8 +21,7 @@ env:
   REPO_URL: https://github.com/coolsnowwolf/lede
   REPO_BRANCH: master
   CONFIG_FILE: configs/r66s.config
-  DIY_P1_SH: scripts/diy-part1.sh
-  DIY_P2_SH: scripts/diy-part2.sh
+  DIY_SH: scripts/diy-scripts.sh
   UPLOAD_BIN_DIR: false
   UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: true
@@ -36,67 +35,49 @@ jobs:
     - name: Checkout
       uses: actions/checkout@main
 
-    # 检查服务器性能
     - name: Check Server Performance
       run: |
-        # 显示性能警告信息
         echo "警告⚠"
         echo "分配的服务器性能有限，若选择的插件过多，务必注意CPU性能！"
         echo -e "已知CPU型号(降序): 7763，8370C，8272CL，8171M，E5-2673\n"
-        # 显示 CPU 信息
         echo "==========================CPU信息=========================="
         echo "CPU物理数量: $(cat /proc/cpuinfo | grep "physical id" | sort | uniq | wc -l)"
         echo "CPU线程数量: $(nproc)"
         echo -e "CPU型号信息:$(cat /proc/cpuinfo | grep -m1 name | awk -F: '{print $2}')\n"
-        # 显示内存信息
         echo "==========================内存信息=========================="
         echo "已安装内存详细信息:"
         echo -e "$(sudo lshw -short -C memory | grep GiB)\n"
-        # 显示硬盘信息
         echo "==========================硬盘信息=========================="
         echo "硬盘数量: $(ls /dev/sd* | grep -v [1-9] | wc -l)" && df -hT
 
-    # 初始化编译环境
     - name: Initialization Environment
       env:
-        # 设置无交互模式
         DEBIAN_FRONTEND: noninteractive
       run: |
-        # 清理 Docker 镜像
         docker rmi $(docker images -q)
-        # 删除不需要的软件和目录
         sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d /usr/local/lib/android $AGENT_TOOLSDIRECTORY
-        # 关闭并删除交换文件
         sudo swapoff -a && sudo rm -f /swapfile /mnt/swapfile
-        # 卸载不需要的软件包
         sudo -E apt-get -y purge azure-cli ghc* zulu* llvm* firefox google* dotnet* powershell openjdk* mongodb* moby* || true
-        # 更新系统并安装必要的软件包
         sudo -E apt-get -y update
         sudo -E apt-get -y install clang rename $(curl -fsSL is.gd/depends_ubuntu_2204)
         sudo -E systemctl daemon-reload
         sudo -E apt-get -y autoremove --purge
         sudo -E apt-get -y clean
-        # 设置时区
         sudo timedatectl set-timezone "$TZ"
 
-    # 合并磁盘空间
     - name: Combine Disks
       run: |
-        # 计算 /mnt 分区可用空间并创建镜像文件
         MNT_SIZE=$((($(df --block-size=1024 --output=avail /mnt | tail -1) - 1024*1024*1) * 1024))
         sudo fallocate -l $MNT_SIZE /mnt/mnt.img
         MNT_NAME=$(sudo losetup -Pf --show /mnt/mnt.img)
         sudo pvcreate -f $MNT_NAME
-        # 计算根分区可用空间并创建镜像文件
         ROOT_SIZE=$((($(df --block-size=1024 --output=avail / | tail -1) - 1024*1024*4) * 1024))
         sudo fallocate -l $ROOT_SIZE /root.img
         ROOT_NAME=$(sudo losetup -Pf --show /root.img)
         sudo pvcreate -f $ROOT_NAME
-        # 创建卷组和逻辑卷
         sudo vgcreate actions $MNT_NAME $ROOT_NAME
         sudo lvcreate -n disk -l 100%FREE actions
         LV_NAME=$(sudo lvscan | awk -F "'" '{print $2}')
-        # 格式化为 btrfs 文件系统并挂载
         sudo mkfs.btrfs -L combinedisk $LV_NAME
         sudo mkdir -p /workdir
         sudo mount -o compress=zstd $LV_NAME /workdir
@@ -109,10 +90,6 @@ jobs:
         git clone $REPO_URL -b $REPO_BRANCH openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
 
-    - name: Load custom feeds
-      run: |
-        [ -e $DIY_P1_SH ] && chmod +x $DIY_P1_SH && $DIY_P1_SH
-
     - name: Update feeds
       run: cd openwrt && ./scripts/feeds update -a
 
@@ -123,9 +100,9 @@ jobs:
       run: |
         [ -e files ] && mv files openwrt/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
-        chmod +x $DIY_P2_SH
+        chmod +x $DIY_SH
         cd openwrt
-        $GITHUB_WORKSPACE/$DIY_P2_SH
+        $GITHUB_WORKSPACE/$DIY_SH
 
     - name: SSH connection to Actions
       uses: P3TERX/ssh2actions@v1.0.0
