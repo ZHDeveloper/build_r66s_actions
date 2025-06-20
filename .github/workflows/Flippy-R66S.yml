@@ -15,7 +15,7 @@ on:
     paths:
       - 'configs/r66s.config'
       - 'scripts/**'
-      - '.github/workflows/Build-Flippy-R66S.yml'
+      - '.github/workflows/Flippy-R66S.yml'
 
 env:
   CONFIG_FILE: configs/r66s.config
