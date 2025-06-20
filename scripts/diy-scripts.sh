@@ -10,11 +10,38 @@
 # Description: OpenWrt DIY script part 2 (After Update feeds)
 # ===============================================================
 
-# 修改默认IP
-sed -i 's/192.168.1.1/192.168.100.1/g' package/base-files/files/bin/config_generate
+# 修改默认IP - 支持多种配置文件位置
+# 方法1: 修改 config_generate (LEDE/OpenWrt 标准位置)
+if [ -f "package/base-files/files/bin/config_generate" ]; then
+    sed -i 's/OpenWrt/R66S/g' package/base-files/files/bin/config_generate
+    sed -i 's/192.168.1.1/192.168.100.1/g' package/base-files/files/bin/config_generate
+    echo "已修改 config_generate 中的默认IP"
+fi
 
-# 修改默认主机名
-sed -i 's/OpenWrt/R66S/g' package/base-files/files/bin/config_generate
+# 方法2: 修改 zzz-default-settings (LEDE 特有)
+if [ -f "package/lean/default-settings/files/zzz-default-settings" ]; then
+    sed -i 's/OpenWrt/R66S/g' package/lean/default-settings/files/zzz-default-settings
+    sed -i 's/192.168.1.1/192.168.100.1/g' package/lean/default-settings/files/zzz-default-settings
+    echo "已修改 zzz-default-settings 中的默认IP"
+fi
+
+# 方法3: 修改 system 配置文件 (ImmortalWrt 可能使用)
+if [ -f "package/base-files/files/etc/config/system" ]; then
+    sed -i "s/OpenWrt/R66S/g" package/base-files/files/etc/config/system
+    sed -i "s/192.168.1.1/192.168.100.1/g" package/base-files/files/etc/config/system
+    echo "已修改 system 配置文件中的默认IP"
+fi
+
+# 方法4: 创建自定义的 uci-defaults 脚本来确保IP设置
+mkdir -p files/etc/uci-defaults
+cat > files/etc/uci-defaults/99-custom-ip << 'EOF'
+#!/bin/sh
+# 设置默认IP地址
+uci set system.@system[0].hostname='R66S'
+uci set network.lan.ipaddr='192.168.100.1'
+uci commit network
+exit 0
+EOF
 
 # 修改版本号 (仅在 LEDE 源码中存在)
 if [ -f "package/lean/default-settings/files/zzz-default-settings" ]; then
