@@ -51,7 +51,7 @@ jobs:
           echo "SOURCE_NAME=LEDE" >> $GITHUB_ENV
         elif [ ${{ matrix.source }} == 'immortalwrt' ]; then
           echo "REPO_URL=https://github.com/immortalwrt/immortalwrt" >> $GITHUB_ENV
-          echo "REPO_BRANCH=openwrt-24.10" >> $GITHUB_ENV
+          echo "REPO_BRANCH=openwrt-23.05" >> $GITHUB_ENV
           echo "SOURCE_NAME=ImmortalWrt" >> $GITHUB_ENV
         fi
 
