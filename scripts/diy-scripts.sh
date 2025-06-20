@@ -10,17 +10,6 @@
 # Description: OpenWrt DIY script part 2 (After Update feeds)
 # ===============================================================
 
-# 修改默认IP - 支持多种配置文件位置
-if [ -f "package/base-files/files/bin/config_generate" ]; then
-    sed -i 's/OpenWrt/R66S/g' package/base-files/files/bin/config_generate
-    sed -i 's/192.168.1.1/192.168.100.1/g' package/base-files/files/bin/config_generate
-fi
-
-# 修改版本号 (仅在 LEDE 源码中存在)
-if [ -f "package/lean/default-settings/files/zzz-default-settings" ]; then
-    sed -i "s/OpenWrt /R66S Build $(TZ=UTC-8 date "+%Y.%m.%d") @ OpenWrt /g" package/lean/default-settings/files/zzz-default-settings
-fi
-
 # 修改时区
 sed -i "s/'UTC'/'CST-8'/g" package/base-files/files/bin/config_generate
 sed -i "/system.@system\[0\].timezone/d" package/base-files/files/bin/config_generate
