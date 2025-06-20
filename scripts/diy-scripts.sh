@@ -30,6 +30,11 @@ echo "        set system.@system[0].zonename='Asia/Shanghai'" >> package/base-fi
 # TTYD 免登录
 sed -i 's|/bin/login|/bin/login -f root|g' feeds/packages/utils/ttyd/files/ttyd.config
 
+# 晶晨宝盒
+git_sparse_clone main https://github.com/ophub/luci-app-amlogic luci-app-amlogic
+sed -i "s|firmware_repo.*|firmware_repo 'https://github.com/$GITHUB_REPOSITORY'|g" package/luci-app-amlogic/root/etc/config/amlogic
+sed -i "s|ARMv8|$RELEASE_TAG|g" package/luci-app-amlogic/root/etc/config/amlogic
+
 # 添加自定义文件
 if [ -d "files" ]; then
     cp -r files/* package/base-files/files/
