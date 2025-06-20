@@ -36,13 +36,15 @@ jobs:
       matrix:
         source: [lede, immortalwrt]
 
+    env:
+      RELEASE_TAG: armv8-${{ matrix.openwrt }}
+
     steps:
     - name: Checkout
       uses: actions/checkout@main
 
     - name: Set Source Repository
       run: |
-        echo "RELEASE_TAG=Flippy-${{ matrix.source }}" >> $GITHUB_ENV
         if [ ${{ matrix.source }} == 'lede' ]; then
           echo "REPO_URL=https://github.com/coolsnowwolf/lede" >> $GITHUB_ENV
           echo "REPO_BRANCH=master" >> $GITHUB_ENV
@@ -227,7 +229,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: flippy-r66s-${{ matrix.source }}-${{ steps.tag.outputs.release_tag }}
+        tag_name: ${{ env.RELEASE_TAG }}
         body: |
           **This is Flippy OpenWrt Firmware for R66S (${{ env.SOURCE_NAME }})**
           ### 📒 固件信息
