@@ -21,8 +21,8 @@ env:
   REPO_URL: https://github.com/immortalwrt/immortalwrt
   REPO_BRANCH: openwrt-24.10
   CONFIG_FILE: configs/r66s.config
-
   DIY_SH: scripts/diy-scripts.sh
+  KERNEL: arm64
   UPLOAD_BIN_DIR: false
   UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: true
@@ -120,8 +120,12 @@ jobs:
         [ -e files ] && mv files openwrt/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         chmod +x $DIY_SH
+        chmod +x scripts/preset-clash-core.sh
+        chmod +x scripts/preset-adguard-core.sh
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_SH
+        $GITHUB_WORKSPACE/scripts/preset-clash-core.sh $KERNEL
+        $GITHUB_WORKSPACE/scripts/preset-adguard-core.sh $KERNEL
 
     - name: SSH connection to Actions
       uses: P3TERX/ssh2actions@v1.0.0

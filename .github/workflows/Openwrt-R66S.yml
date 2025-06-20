@@ -18,7 +18,7 @@ on:
       - '.github/workflows/Openwrt-R66S.yml'
 
 env:
-  CLASH_KERNEL: arm64
+  KERNEL: arm64
   CONFIG_FILE: configs/r66s.config
   DIY_SH: scripts/diy-scripts.sh
   CACHE_TOOLCHAIN: true
@@ -152,8 +152,12 @@ jobs:
         [ -e files ] && mv files openwrt/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         chmod +x $DIY_SH
+        chmod +x scripts/preset-clash-core.sh
+        chmod +x scripts/preset-adguard-core.sh
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_SH
+        $GITHUB_WORKSPACE/scripts/preset-clash-core.sh $KERNEL
+        $GITHUB_WORKSPACE/scripts/preset-adguard-core.sh $KERNEL
 
     - name: SSH connection to Actions
       uses: P3TERX/ssh2actions@v1.0.0
