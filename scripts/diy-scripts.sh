@@ -10,6 +10,9 @@
 # Description: OpenWrt DIY script part 2 (After Update feeds)
 # ===============================================================
 
+# 修改默认IP
+sed -i 's/192.168.1.1/192.168.100.1/g' package/base-files/files/bin/config_generate
+
 # 修改时区
 sed -i "s/'UTC'/'CST-8'/g" package/base-files/files/bin/config_generate
 sed -i "/system.@system\[0\].timezone/d" package/base-files/files/bin/config_generate
