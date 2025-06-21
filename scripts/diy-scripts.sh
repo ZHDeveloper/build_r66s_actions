@@ -43,10 +43,15 @@ function git_sparse_clone() {
   cd .. && rm -rf $repodir
 }
 
-# 晶晨宝盒
-git_sparse_clone main https://github.com/ophub/luci-app-amlogic luci-app-amlogic
-
 rm -rf feeds/packages/net/mosdns
-rm -rf package/feeds/small/luci-app-ssr-plus
+rm -rf feeds/luci/themes/luci-theme-argon
+rm -rf feeds/luci/applications/luci-app-mosdns
 
 git clone --depth=1 https://github.com/fw876/helloworld package/luci-app-ssr-plus
+git clone --depth=1 https://github.com/xiaorouji/openwrt-passwall package/luci-app-passwall
+git clone --depth=1 https://github.com/sirpdboy/luci-app-adguardhome package/luci-app-adguardhome
+git clone --depth=1 -b v5 https://github.com/sbwml/luci-app-mosdns package/luci-app-mosdns
+git clone --depth=1 https://github.com/jerrykuku/luci-theme-argon package/luci-theme-argon
+
+git_sparse_clone master https://github.com/vernesong/OpenClash luci-app-openclash
+git_sparse_clone main https://github.com/ophub/luci-app-amlogic luci-app-amlogic
