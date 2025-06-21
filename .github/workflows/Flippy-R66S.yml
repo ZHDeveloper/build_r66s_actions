@@ -49,12 +49,10 @@ jobs:
           echo "REPO_URL=https://github.com/coolsnowwolf/lede" >> $GITHUB_ENV
           echo "REPO_BRANCH=master" >> $GITHUB_ENV
           echo "SOURCE_NAME=LEDE" >> $GITHUB_ENV
-          echo -e "CONFIG_TARGET_armvirt=y\nCONFIG_TARGET_armvirt_64=y" >> $CONFIG_FILE
         elif [ ${{ matrix.source }} == 'immortalwrt' ]; then
           echo "REPO_URL=https://github.com/immortalwrt/immortalwrt" >> $GITHUB_ENV
           echo "REPO_BRANCH=openwrt-24.10" >> $GITHUB_ENV
           echo "SOURCE_NAME=ImmortalWrt" >> $GITHUB_ENV
-          echo -e "CONFIG_TARGET_armsr=y\nCONFIG_TARGET_armsr_armv8=y" >> $CONFIG_FILE
         fi
 
     - name: Check Server Performance
