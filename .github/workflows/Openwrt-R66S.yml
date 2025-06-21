@@ -20,6 +20,7 @@ on:
 env:
   KERNEL: arm64
   CONFIG_FILE: configs/r66s.config
+  ROCKCHIP_CONFIG_FILE: configs/rockchip.config
   DIY_SH: scripts/diy-scripts.sh
   CACHE_TOOLCHAIN: true
   UPLOAD_BIN_DIR: false
@@ -52,6 +53,9 @@ jobs:
           echo "REPO_URL=https://github.com/immortalwrt/immortalwrt" >> $GITHUB_ENV
           echo "REPO_BRANCH=openwrt-24.10" >> $GITHUB_ENV
         fi
+        
+        # Append rockchip.config to r66s.config to preserve original content
+        cat $ROCKCHIP_CONFIG_FILE >> $CONFIG_FILE
 
     - name: Check Server Performance
       run: |
