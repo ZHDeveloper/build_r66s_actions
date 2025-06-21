@@ -53,5 +53,3 @@ sed -i "s|ARMv8|$RELEASE_TAG|g" package/luci-app-amlogic/root/etc/config/amlogic
 
 rm -rf package/feeds/small/luci-app-ssr-plus
 git clone --depth=1 https://github.com/fw876/helloworld package/luci-app-ssr-plus
-
-git_sparse_clone main https://github.com/haiibo/packages luci-theme-opentomcat
