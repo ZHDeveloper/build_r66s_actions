@@ -245,12 +245,12 @@ jobs:
           - 🚀 打包方式: Flippy
           - 🌐 默认地址: 192.168.100.1
           - 🔑 默认密码: password
-          ### 🧊 固件特性
-          - ✅ 预装 Clash Meta 内核 (ARM64)
-          - ✅ 预装 AdGuard Home 内核 (ARM64)
-          - ✅ 包含丰富的 LuCI 应用程序
-          - ✅ 支持 Docker 容器管理
-          - ✅ 支持多种代理协议
+          ### 🧊 固件版本
+          - 固件编译前最后一次➦[主源码](${{ env.REPO_URL }})更新记录
+          - ${{ env.COMMIT_AUTHOR }}
+          - ${{ env.COMMIT_DATE }}
+          - ${{ env.COMMIT_MESSAGE }}
+          - ${{ env.COMMIT_HASH }}
         files: ${{ env.FIRMWARE }}/*
 
     - name: Delete workflow runs
@@ -258,12 +258,3 @@ jobs:
       with:
         retain_days: 1
         keep_minimum_runs: 3
-
-    - name: Remove old Releases
-      uses: dev-drprasad/delete-older-releases@v0.3.4
-      if: env.UPLOAD_RELEASE == 'true' && !cancelled()
-      with:
-        keep_latest: 6
-        delete_tags: true
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
