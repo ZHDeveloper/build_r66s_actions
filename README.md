@@ -148,7 +148,6 @@ openwrt_r66s/
 ├── scripts/                    # 自定义脚本
 │   ├── diy-scripts.sh         # 主要自定义脚本
 │   ├── preset-clash-core.sh   # Clash 内核预设
-│   └── preset-adguard-core.sh # AdGuard 内核预设
 ├── files/                      # 自定义文件 (可选)
 │   └── etc/                   # 系统配置文件
 ├── LICENSE                     # 开源协议
